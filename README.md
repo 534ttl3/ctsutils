@@ -7,5 +7,5 @@ utility functions for example for this usecase.
 install with
 
 ```
-pip install git+https://github.com/534ttl3/ctsutils
+pip install git+git://github.com/534ttl3/ctsutils.git --upgrade
 ```
