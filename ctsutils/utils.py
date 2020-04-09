@@ -29,3 +29,5 @@ def set_axes_equal(ax):
     ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
 
     ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+
+
