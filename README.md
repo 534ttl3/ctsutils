@@ -19,6 +19,6 @@ git clone git@github.com:534ttl3/ctsutils.git
 # ... maybe activate a virtual environment ...
 
 # install the package in editable mode in your virtual environment
-# to be able to 
+# to be able to modify it and push it back to github
 pip install -e ./ctsutils/
 ```
