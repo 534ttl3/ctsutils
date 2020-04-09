@@ -1,0 +1,26 @@
+Metadata-Version: 2.1
+Name: ctsutils
+Version: 0.0.1
+Summary: Utility functions for python
+Home-page: https://github.com/534ttl3/csutils/
+Author: C.T. Schnur
+Author-email: 534ttl3@gmail.com
+License: UNKNOWN
+Description: # Utils for Python
+        
+        Often I need to plot things with matplotlib. This library defines 
+        utility functions for example for this usecase.
+        
+        
+        install with
+        
+        ```
+        pip install git+https://github.com/534ttl3/ctsutils
+        ```
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
