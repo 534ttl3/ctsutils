@@ -5,6 +5,20 @@ import mplcursors
 import matplotlib.pyplot as plt
 
 
+# ------ prepare browser notebook --------
+
+def prepare_browser_nb():
+    """
+    Use with care, or just copy stuff from here to your nb.
+    """
+
+    from IPython.core.display import display, HTML
+    display(HTML("<style>.container { width:100% !important; }</style>"))
+    import matplotlib
+    # %matplotlib notebook
+    matplotlib.use('nbagg')
+
+
 # ------- 2d data point picker ---------
 
 # enable this to use it in a jupter notebook
