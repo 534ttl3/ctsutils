@@ -1,6 +1,29 @@
 import numpy as np
 from matplotlib.transforms import Bbox
 import matplotlib.lines as lines
+import matplotlib.pyplot as plt
+
+def get_different_linestyles(howmany):
+    all_linestyles = ["-", "--", "-.", ":"]
+    # FIXME: make infinitely many linestyles possible
+    assert (howmany < len(all_linestyles))
+    return all_linestyles[:howmany]
+
+def get_different_markerstyles(howmany):
+    all_markerstyles = ["o", "*", "v", "^", "+", "x"]
+    # FIXME: make infinitely many markerstyles possible
+    assert (howmany < len(all_markerstyles))
+    return all_markerstyles[:howmany]
+
+def draw_vector_3d (target_point_vec3, source_point_vec3=np.array ([0,0,0]), ax=None):
+    if not ax:
+        ax = plt.gca ()
+
+    points = np.transpose ([source_point_vec3, target_point_vec3])
+    xs = points [:,0]
+    ys = points [:,1]
+    zs = points [:,2]
+    ax.plot (xs, ys, zs)
 
 def set_axes_equal(ax):
     '''Make axes of 3D plot have equal scale so that spheres appear as spheres,
@@ -80,6 +103,9 @@ def set_axes_position_and_dimensions_in_inches(fig, ax, x_abs, y_abs, w_abs, h_a
     automatically.
     Just pass a figure fig, an axes ax, and absolute values for x and y coordinates and
     for width and height of your subplot (or in general, your axes object).
+
+    Attention: placing stuff manually like this means you should never call tight_layout,
+    since this will rearrange everything again
     """
     # fractional coordinates \in [0, 1] correspond to bottom/top and left/right border
     # of the figure
