@@ -10,10 +10,26 @@ def get_different_linestyles(howmany):
     return all_linestyles[:howmany]
 
 def get_different_markerstyles(howmany):
-    all_markerstyles = ["o", "*", "v", "^", "+", "x"]
+    all_markerstyles = ["1", "2", "3", "4", "+", "x", "o", "*", "v", "^"]
     # FIXME: make infinitely many markerstyles possible
     assert (howmany < len(all_markerstyles))
     return all_markerstyles[:howmany]
+
+def get_different_colors(howmany):
+    all_colors = [(0,0,0,1),  # black
+                  (1,0,0,1),  # red
+                  (0,1,0,1),  # green
+                  (0,0,1,1),  # blue
+                  (0,0,0,1),
+
+                  (.5,.5,.5,1),  # weaker versions of black, red, green, blue
+                  (.5,0,0,1),
+                  (0,.5,0,1),
+                  (0,0,.5,1)]
+
+    # FIXME: make infinitely many colors possible
+    assert (howmany < len(all_colors))
+    return all_colors[:howmany]
 
 def draw_vector_3d (target_point_vec3, source_point_vec3=np.array ([0,0,0]), ax=None):
     if not ax:
