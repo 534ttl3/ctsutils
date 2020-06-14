@@ -2,7 +2,12 @@ README.md
 setup.py
 ctsutils/__init__.py
 ctsutils/comsol.py
+ctsutils/euler_angles.py
+ctsutils/fom.py
 ctsutils/jup_nb_interactive.py
+ctsutils/models.py
+ctsutils/mpl_interactive.py
+ctsutils/peakclasses.py
 ctsutils/utils.py
 ctsutils.egg-info/PKG-INFO
 ctsutils.egg-info/SOURCES.txt
