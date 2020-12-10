@@ -21,6 +21,7 @@ samp = Slider(axamp, 'Amp', 0.1, 10.0, valinit=a0)
 
 
 def update(val):
+    print(val)
     amp = samp.val
     freq = sfreq.val
     l.set_ydata(amp*np.sin(2*np.pi*freq*t))
