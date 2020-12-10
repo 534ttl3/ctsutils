@@ -35,8 +35,8 @@ integrals = ps.calc_integral(Z, "x")
 
 fig, ax = plt.subplots(1, 1)
 
-ps.plot(Z, z_label="Z", ordering_of_params_name_and_value=(("y3", None), ("y2", None)), ax=ax)
-# ps.plot(integrals, z_label="integrals", ordering_of_params_name_and_value=(("y3", None), ("y2", None)), ax=ax)
+#ps.plot(Z, z_label="Z", ordering_of_params_name_and_value=(("y3", None), ("y2", None)), ax=ax)
+ps.plot(integrals, z_label="integrals", ordering_of_params_name_and_value=(("y3", None), ("y2", None)), ax=ax)
 
 # ps.plot(integrals, z_label="integrals", ordering_of_params_name_and_value=(("y2", None), ("y", None)), ax=ax)
 

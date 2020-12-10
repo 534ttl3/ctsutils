@@ -84,7 +84,7 @@ class CSlider(Slider):
         """
         Allows to extend the function to have more than just val as it's argument
         """
-        on_changed_func = lambda val, args=self.update_func_opt_args: func_with_val_and_args(val, *args) # this sets fixed references to the args
+        on_changed_func = lambda val, args=args_opt: func_with_val_and_args(val, *args) # this sets fixed references to the args
         # matplotlib.widgets can still call func(val) as before, just that I packed args into it
 
         Slider.on_changed(self, on_changed_func)
@@ -203,7 +203,7 @@ class CParameterSpace:
         for i, param in enumerate(ordered_params[2:]):
 
             fig.subplots_adjust(left=0.25, bottom=0.05 + 0.05 * i + 0.2)
-            mpl_slider_ax = plt.axes([0.25, 0.05 + 0.05 * i, 0.65, 0.03])
+            mpl_slider_ax = plt.axes([0.1, 0.05 + 0.05 * i, 0.65, 0.03])
 
             index_expr = indexing_list_indep_vars[self.get_index_of(param.name)] # either an integer or a slice
 
@@ -227,7 +227,7 @@ class CParameterSpace:
 
             cslider = CSlider(mpl_slider_ax, param.name, np.min(param.np_arr), np.max(param.np_arr), **mpl_slider_kwargs)
 
-            cslider.on_changed(CParameterSpace.update_func, args_opt=(cslider, cps, cparam_name))
+            cslider.on_changed(CParameterSpace.update_func, args_opt=(cslider, self, param, ordering_of_params_name_and_value, dep_var_mgf, fig, ax))
 
             self.csliders.append(cslider)
 
@@ -235,13 +235,12 @@ class CParameterSpace:
 
     # TODO
     @staticmethod
-    def update_func(val, assoc_cslider, cps, cparam_name):
+    def update_func(val, cslider, cps, param, ordering_of_params_name_and_value, dep_var_mgf, fig, ax):
         """ """
-
         if not (param.np_arr == val).any(): # if val is not exactly on a data point
-                    nearest_idx = find_nearest_idx(param.np_arr, val)
+            nearest_idx = find_nearest_idx(param.np_arr, val)
             nearest_val = param.np_arr[nearest_idx]
-            print("resetting slider for ", param.name, " from ", val, " to ", nearest_val)
+            # print("resetting slider for ", param.name, " from ", val, " to ", nearest_val)
             cslider.set_val(nearest_val)
 
         # update the pcolor chart
@@ -260,13 +259,16 @@ class CParameterSpace:
             updated_ordering_of_params_name_and_value.append(
                 (param.name, val))
 
-        indexing_list_indep_vars, ordered_params = self._get_indexing_list_and_ordered_params(updated_ordering_of_params_name_and_value)
+        indexing_list_indep_vars, ordered_params = cps._get_indexing_list_and_ordered_params(updated_ordering_of_params_name_and_value)
 
-        X, Y, Z = shape_arrays_for_pcolor_plotting(self, indexing_list_indep_vars, ordered_params, dep_var_mgf)
-        ax.pcolor(X, Y, Z, shading="nearest")
+        X, Y, Z = shape_arrays_for_pcolor_plotting(cps, indexing_list_indep_vars, ordered_params, dep_var_mgf)
+        c = ax.pcolor(X, Y, Z# , shading="nearest"
+        )
+        # cbar = fig.colorbar(c, ax=ax)
+        # cbar.ax.set_ylabel(z_label, rotation=-90, va="bottom")
 
         # update the slider to show the actual value of the grid point, not the continuous slider value
-        index = indexing_list_indep_vars[self.get_index_of(param.name)]
+        index = indexing_list_indep_vars[cps.get_index_of(param.name)]
         assert isinstance(index, int) or isinstance(index, np.int64)
         grid_value = param.np_arr[index]
 
@@ -307,7 +309,8 @@ class CParameterSpace:
             X, Y, Z = shape_arrays_for_pcolor_plotting(self, indexing_list_indep_vars, ordered_params, dep_var_mgf)
 
             assert np.shape(X) == np.shape(Y) == np.shape(Z) and len(np.shape(X)) == 2
-            c = ax.pcolor(X, Y, Z, shading="auto")
+            c = ax.pcolor(X, Y, Z, # shading="auto"
+            )
             cbar = fig.colorbar(c, ax=ax)
             cbar.ax.set_ylabel(z_label, rotation=-90, va="bottom")
 
@@ -356,8 +359,8 @@ class CParameterSpace:
                     nearest_val = self.get_arr(asked_pname)[nearest_idx]
                     indexing_list_indep_vars[self.get_index_of(asked_pname)] = nearest_idx
 
-                    print("finding nearest value to", asked_pname, ": provided value : ", asked_def_pvalue,
-                          ", nearest idx: ", nearest_idx, ", nearest value : ", nearest_val)
+                    # print("finding nearest value to", asked_pname, ": provided value : ", asked_def_pvalue,
+                    #       ", nearest idx: ", nearest_idx, ", nearest value : ", nearest_val)
                 else:
                     # no default value supplied -> just get the 0th index
                     indexing_list_indep_vars[self.get_index_of(asked_pname)] = 0
