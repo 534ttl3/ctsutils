@@ -2,20 +2,50 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
 
+import operator
+
 def find_nearest_idx(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return idx
 
-def get_values_from_meshgrid(mg, np_bool_array):
-    """ """
-    _ = np.where(np_bool_array)
-    return list((map(lambda n: (mg[n][np_bool_array]).item(), range(len(mg)))))
+def get_values_from_meshgrid(np_bool_array, mg=None, reduced_dimensions_indices=[], cps=None, return_with_names=True):
+    """
+    Args:
+        reduced_dimensions_indices: a positive number by which the dimension of mg was reduced
+                                    to arrive at the result from which np_bool_array comes (e.g. integration over one variable)
+                                    reduces the dimension of the result by one (the index of that variable is then supplied to
+                                    this argument) """
 
 
-def get_indices_from_np_where_quer(np_where_query):
+    if mg is None and cps is not None:
+        mg = cps._meshgrid
+
+    num_of_indep_var = len(mg)
+
+    indexing_expr = [slice(None)] * num_of_indep_var
+    for i in range(num_of_indep_var):
+        if i in reduced_dimensions_indices:
+            indexing_expr[i] = 0  # it could be any value, since the result does not depend on them (e.g. the calculated integral along x does not depend on a particular value of x)
+
+    # import pdb; pdb.set_trace()  # noqa BREAKPOINT
+    list_not_reduced = list((map(lambda n: (mg[n][tuple(indexing_expr)][np_bool_array]).item(), range(len(mg)))))
+    reduction_tuple = tuple(filter(lambda i: i not in reduced_dimensions_indices, range(num_of_indep_var)))
+    list_reduced = list(operator.itemgetter(*reduction_tuple)(list_not_reduced))
+
+    if return_with_names == True:
+        assert cps is not None
+        list_of_param_names = [cp.name for cp in cps.cparams_list]
+        reduced_list_of_param_names = list(operator.itemgetter(*reduction_tuple)(list_of_param_names))
+        list_reduced_with_param_names = None
+        return [list_reduced, tuple(zip(reduced_list_of_param_names, list_reduced))]  # return two things
+    else:
+        return list_reduced  # return one thing
+
+
+def get_indices_from_np_where_query(np_where_query):
     """ """
-    return tuple(map(lambda el: np.int(el), np.where(Ts == np.max(Ts))))
+    return tuple(map(lambda el: np.int(el), np.where(np_where_query)))
 
 
 def shape_arrays_for_pcolor_plotting(ps, indexing_list_indep_vars, ordered_params, dep_var_mgf):
@@ -128,7 +158,7 @@ class CParameterSpace:
         if len(els) == 1:
             return els[0]
         else:
-            print("parameter contained twice: ", els)
+            print("parameter occurs not once: ", els)
             exit(1)
 
     def get_param_by_name(self, name):
@@ -231,7 +261,7 @@ class CParameterSpace:
 
             self.csliders.append(cslider)
 
-            print("making slider of " + param.name + ", with init val: ", init_val)
+            # print("making slider of " + param.name + ", with init val: ", init_val)
 
     # TODO
     @staticmethod

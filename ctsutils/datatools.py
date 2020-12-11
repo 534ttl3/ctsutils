@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import newton
 
 def get_nth_smallest_curve(x, y, n):
     """
@@ -16,3 +17,18 @@ def get_nth_smallest_curve(x, y, n):
         y_requested = np.append(y_requested, np.sort(np.ravel(y[x == k]))[n])
 
     return x, y_requested  # as x, y data
+
+def extract_x_from_interpolation(y_specific, x, f):
+    # find x where f(x) = y_specific
+    # import ipdb; ipdb.set_trace()  # noqa BREAKPOINT
+
+    root = None
+    # try to find a root
+    try:
+        root = newton(lambda x: f(x) - y_specific, (max(x) + min(x))/2.)
+        # import ipdb; ipdb.set_trace()  # noqa BREAKPOINT
+        # print("hey, root: ", root, " for ", x, y_specific)
+    except ValueError as err:
+        print("skipping because of ValueError: {0}".format(err))
+
+    return root
