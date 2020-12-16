@@ -187,30 +187,6 @@ class CParameterSpace:
             print("parameter contained twice: ", els)
             exit(1)
 
-    def calc_integral(self, dep_var_mgf,
-                      param_to_integrate_over_name):
-        """
-        Args:
-            dep_var_mgf: these are the actual y values
-            param_to_integrate_over: name of param to integrate over -> x values
-        """
-
-        return np.trapz(dep_var_mgf,
-                        x=self.get_arr(param_to_integrate_over_name),
-                        axis=self.get_index_of(param_to_integrate_over_name))
-
-    def calc_function(self, f, args_param_names=()):
-        """ """
-        if len(args_param_names) == 0:
-            print("nothing sampled!")
-            return None
-
-        # check that all shapes are equal. only then they can be processed correctly by numpy
-        shapes = np.array([np.shape(self.get_mgf_arr(name)) for name in args_param_names])
-        assert (shapes == shapes[0]).all()
-
-        meshgridifed_arrays = [self.get_mgf_arr(name) for name in args_param_names]
-        return f(*meshgridifed_arrays)
 
     def get_dimension(self):
         """ """
@@ -305,48 +281,6 @@ class CParameterSpace:
         fig.canvas.draw_idle()
         # print("updating slider of " + param.name + ", ", val, "updated_ordering_of_params_name_and_value: ", updated_ordering_of_params_name_and_value)
 
-
-    def plot(self, dep_var_mgf, ordering_of_params_name_and_value=[],
-             fig=None, ax=None, z_label=""):
-        """
-        Args:
-            ordering_of_params_name_and_value: list of tuples (param name, default value)
-                                the frist two independent parameters appear on x and y axes of the color plot
-                                the others (if specified) appear as sliders in the specified order.
-        """
-
-        if ax is None:
-            ax = plt.gca()
-
-        if fig is None:
-            fig = plt.gcf()
-
-        if self.get_dimension() == 1:
-            ax.plot(dep_var_mgf[:],  # just one dimension, i.e. take all independent values of that dimension
-                    # if there is only one parameter, it must have index 0
-                    self.get_arr(0),
-                    "k-")
-        elif self.get_dimension() >= 2.:
-            # make color plot with self.get_dimension() - 2 sliders below to vary the other parameters
-            # this contains in the end an expression like [:, :, :, 2, :] (where ":" is equivalent to slice(None))
-
-            indexing_list_indep_vars, ordered_params = self._get_indexing_list_and_ordered_params(ordering_of_params_name_and_value)
-
-            # if there are more than 2 dimensions (free parameters), plot sliders for the values of the other dimensions
-            self._make_sliders(indexing_list_indep_vars, ordered_params, ordering_of_params_name_and_value, dep_var_mgf, fig, ax)
-
-            # plot X, Y, Z data, where X, Y, Z must have the same np.shape() tuple (2d tuple!)
-            X, Y, Z = shape_arrays_for_pcolor_plotting(self, indexing_list_indep_vars, ordered_params, dep_var_mgf)
-
-            assert np.shape(X) == np.shape(Y) == np.shape(Z) and len(np.shape(X)) == 2
-            c = ax.pcolor(X, Y, Z, # shading="auto"
-            )
-            cbar = fig.colorbar(c, ax=ax)
-            cbar.ax.set_ylabel(z_label, rotation=-90, va="bottom")
-
-            ax.set_xlabel(ordered_params[0].get_label_str())
-            ax.set_ylabel(ordered_params[1].get_label_str())
-
     def _get_indexing_list_and_ordered_params(self, ordering_of_params_name_and_value):
         """
         used in preparation for plotting with pcolor and sliders
@@ -404,3 +338,145 @@ class CParameterSpace:
         ordered_params = [self.get_param_by_name(param_name) for param_name in ordered_param_names]
 
         return indexing_list_indep_vars, ordered_params
+
+
+
+def plot(cps, dep_var_mgf, ordering_of_params_name_and_value=[],
+         fig=None, ax=None, z_label=""):
+    """
+    Args:
+        ordering_of_params_name_and_value: list of tuples (param name, default value)
+                            the frist two independent parameters appear on x and y axes of the color plot
+                            the others (if specified) appear as sliders in the specified order.
+    """
+
+    if ax is None:
+        ax = plt.gca()
+
+    if fig is None:
+        fig = plt.gcf()
+
+    if cps.get_dimension() == 1:
+        ax.plot(dep_var_mgf[:],  # just one dimension, i.e. take all independent values of that dimension
+                # if there is only one parameter, it must have index 0
+                cps.get_arr(0),
+                "k-")
+    elif cps.get_dimension() >= 2.:
+        # make color plot with cps.get_dimension() - 2 sliders below to vary the other parameters
+        # this contains in the end an expression like [:, :, :, 2, :] (where ":" is equivalent to slice(None))
+
+        indexing_list_indep_vars, ordered_params = cps._get_indexing_list_and_ordered_params(ordering_of_params_name_and_value)
+
+        # if there are more than 2 dimensions (free parameters), plot sliders for the values of the other dimensions
+        cps._make_sliders(indexing_list_indep_vars, ordered_params, ordering_of_params_name_and_value, dep_var_mgf, fig, ax)
+
+        # plot X, Y, Z data, where X, Y, Z must have the same np.shape() tuple (2d tuple!)
+        X, Y, Z = shape_arrays_for_pcolor_plotting(cps, indexing_list_indep_vars, ordered_params, dep_var_mgf)
+
+        assert np.shape(X) == np.shape(Y) == np.shape(Z) and len(np.shape(X)) == 2
+        c = ax.pcolor(X, Y, Z, # shading="auto"
+        )
+        cbar = fig.colorbar(c, ax=ax)
+        cbar.ax.set_ylabel(z_label, rotation=-90, va="bottom")
+
+        ax.set_xlabel(ordered_params[0].get_label_str())
+        ax.set_ylabel(ordered_params[1].get_label_str())
+
+
+def calc_integral(cps, dep_var_mgf,
+                  param_to_integrate_over_name):
+    """
+    Args:
+        dep_var_mgf: these are the actual y values
+        param_to_integrate_over: name of param to integrate over -> x values
+    """
+
+    return np.trapz(dep_var_mgf,
+                    x=cps.get_arr(param_to_integrate_over_name),
+                    axis=cps.get_index_of(param_to_integrate_over_name))
+
+
+def calc_function(cps, f, args_param_names=()):
+    """ """
+    if len(args_param_names) == 0:
+        print("nothing sampled!")
+        return None
+
+    # check that all shapes are equal. only then they can be processed correctly by numpy
+    shapes = np.array([np.shape(cps.get_mgf_arr(name)) for name in args_param_names])
+    assert (shapes == shapes[0]).all()
+
+    meshgridifed_arrays = [cps.get_mgf_arr(name) for name in args_param_names]
+    return f(*meshgridifed_arrays)
+
+def tuple_pull_to_front(orig_tuple, *tuple_keys_to_pull_to_front):
+    """
+    Args:
+        orig_tuple: original tuple of type (('lS', 5.6), ('lT', 3.4000000000000004), ('ZT', 113.15789473684211), ('ZS', 32.10526315789474))
+        *tuple_keys_to_pull_to_front: keys of those tuples that (in the given order) should be pulled to the front of the orig_tuple
+    """
+    orig_lst = list(orig_tuple)
+    new_lst = []
+    new_lst2 = []
+
+    for otup in orig_lst:
+        if otup[0] in tuple_keys_to_pull_to_front:
+            new_lst.append(otup)
+        else:
+            new_lst2.append(otup)
+
+    new_lst.extend(new_lst2)
+    return new_lst
+
+def get_twotuple_value(twotuple_tuple_or_list, key):
+    """ from a tuple like (('lS', 5.6), ('lT', 3.4000000000000004)), get the value from giving a key """
+    return list(filter(lambda el: el[0] == key, list(twotuple_tuple_or_list)))[0][1]
+
+def linspace_around_value(middle_value, interval_around, howmany):
+    """
+    Args:
+        interval_around: tuple of the form (*,*), or scalar, or (*, *, Bool: percentage)
+    """
+    start_mod = 0
+    stop_mod = 0
+
+    percentage_p = len(list(interval_around)) > 2 and interval_around[2] == True # this means percentage
+
+    if isinstance(interval_around, tuple):
+        start_mod = interval_around[0]
+        stop_mod = interval_around[1]
+
+        if percentage_p == True:
+            start_mod *= middle_value * 1./100.
+            stop_mod *= middle_value * 1./100.
+    else:
+        assert interval_around >= 0
+        start_mod = -interval_around
+        stop_mod = interval_around
+
+        if percentage_p == True:
+            start_mod *= middle_value * 1./100.
+            stop_mod *= middle_value * 1./100.
+
+    return np.linspace(middle_value + start_mod,
+                       middle_value + stop_mod,
+                       howmany)
+
+from copy import deepcopy
+
+def get_cparams_refined_ranges_around_minimum(cps, minimum_indep_vars_tuple, which_to_update_tuples_list):
+    """
+    Args:
+        minimum_indep_vars_tuple: coarse minimum around which to generate new ranges
+        *which_to_update_tuples: list of which to update
+    """
+    cparams_new = [deepcopy(el) for el in cps.cparams_list]
+    for cp in cparams_new:
+        for ut in which_to_update_tuples_list:
+            if ut[0] == cp.name:
+                # print(minimum_indep_vars_tuple, ut[0])
+                cp.np_arr = linspace_around_value(
+                    get_twotuple_value(minimum_indep_vars_tuple, ut[0]), *ut[1:])
+                # print(np.size(cp.np_arr))
+
+    return cparams_new
